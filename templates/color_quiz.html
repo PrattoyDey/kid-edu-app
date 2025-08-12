@@ -1,0 +1,189 @@
+<!-- templates/color_quiz.html -->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Color Quiz</title>
+    <style>
+      body {
+        font-family: "Comic Sans MS", cursive, sans-serif;
+        background: linear-gradient(135deg, #ffecd2, #fcb69f);
+        text-align: center;
+        padding: 20px;
+        margin: 0;
+      }
+
+      h1 {
+        color: #333;
+        font-size: 40px;
+        margin-bottom: 15px;
+        text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+      }
+
+      #question {
+        font-size: 28px;
+        margin-bottom: 20px;
+        background: #fff3e6;
+        display: inline-block;
+        padding: 15px 25px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .color-btn {
+        display: inline-block;
+        padding: 15px 30px;
+        margin: 10px;
+        font-size: 22px;
+        font-weight: bold;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        color: white;
+        min-width: 120px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      .color-btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+
+      .Blue {
+        background: #2196f3;
+      }
+      .Green {
+        background: #4caf50;
+      }
+      .Red {
+        background: #f44336;
+      }
+      .Yellow {
+        background: #ffeb3b;
+        color: black;
+      }
+      .Orange {
+        background: #ff9800;
+      }
+      .Purple {
+        background: #9c27b0;
+      }
+      .Pink {
+        background: #e91e63;
+      }
+      .White {
+        background: #ffffff;
+        color: black;
+        border: 2px solid #ccc;
+      }
+
+      #status {
+        font-size: 22px;
+        margin-top: 20px;
+        font-weight: bold;
+        min-height: 30px;
+      }
+
+      video {
+        margin-top: 20px;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+      }
+    </style>
+  </head>
+  <body>
+    <h1>🎨 Color Quiz 🎯</h1>
+
+    <div id="question">{{ question.question }}</div>
+
+    <div id="options">
+      {% for opt in question.options %}
+      <button class="color-btn {{ opt }}" onclick="selectAnswer('{{ opt }}')">
+        {{ opt }}
+      </button>
+      {% endfor %}
+    </div>
+
+    <div id="status"></div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/handpose"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs-backend-webgl"></script>
+
+    <script>
+      const correctAnswer = "{{ question.answer }}";
+      const questionText = "{{ question.question }}";
+
+      function selectAnswer(answer) {
+        fetch("/check_color_answer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            answer: answer,
+            correct: correctAnswer,
+            question: questionText,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            const statusDiv = document.getElementById("status");
+            if (data.result === "correct") {
+              statusDiv.innerHTML = "✅ Correct!";
+              statusDiv.style.color = "green";
+              setTimeout(() => window.location.reload(), 1000);
+            } else {
+              statusDiv.innerHTML = "❌ Wrong!";
+              statusDiv.style.color = "red";
+            }
+          });
+      }
+
+      async function initGestureDetection() {
+        const modelURL = "/static/models/color_gestures/model.json";
+        const gestureModel = await tf.loadLayersModel(modelURL);
+
+        const video = document.createElement("video");
+        video.autoplay = true;
+        video.width = 300;
+        video.height = 200;
+        document.body.appendChild(video);
+
+        navigator.mediaDevices.getUserMedia({ video: true }).then((stream) => {
+          video.srcObject = stream;
+        });
+
+        video.addEventListener("loadeddata", () => {
+          detectGesture();
+        });
+
+        async function detectGesture() {
+          if (video.readyState === 4) {
+            const tensor = tf.browser
+              .fromPixels(video)
+              .resizeNearestNeighbor([224, 224])
+              .toFloat()
+              .expandDims(0)
+              .div(tf.scalar(255));
+
+            const prediction = gestureModel.predict(tensor);
+            const predictedIndex = prediction.argMax(-1).dataSync()[0];
+            const labels = ["G", "R", "W", "Y", "B", "O", "P"];
+            const detectedLetter = labels[predictedIndex];
+
+            if (
+              detectedLetter &&
+              detectedLetter[0].toLowerCase() === correctAnswer[0].toLowerCase()
+            ) {
+              selectAnswer(correctAnswer);
+            }
+
+            tensor.dispose();
+            prediction.dispose();
+          }
+          requestAnimationFrame(detectGesture);
+        }
+      }
+
+      initGestureDetection();
+    </script>
+  </body>
+</html>

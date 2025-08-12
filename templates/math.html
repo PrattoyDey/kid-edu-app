@@ -1,0 +1,177 @@
+<!-- templates/math.html -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Math Quiz — Play & Learn</title>
+
+    <!-- app-wide CSS -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    <style>
+      /* page-specific polish */
+      body {
+        background: #fff8ec;
+      }
+      .quiz-card {
+        max-width: 820px;
+        margin: 28px auto;
+        padding: 28px;
+        border-radius: 18px;
+        background: linear-gradient(180deg, #fff9ec, #fff5e6);
+        box-shadow: 0 18px 40px rgba(11, 19, 43, 0.08);
+        text-align: center;
+      }
+      .quiz-title {
+        font-family: "Fredoka One", "Baloo 2", cursive;
+        font-size: 36px;
+        color: #ff6f3c;
+        margin-bottom: 6px;
+      }
+      #question {
+        font-size: 28px;
+        font-weight: 800;
+        margin: 18px 0;
+        color: #0b132b;
+      }
+      .options {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        align-items: center;
+        padding: 0 16px;
+      }
+      .option-btn {
+        width: 100%;
+        max-width: 620px;
+        padding: 18px;
+        font-size: 20px;
+        font-weight: 800;
+        border-radius: 14px;
+        border: 0;
+        cursor: pointer;
+        box-shadow: 0 8px 20px rgba(11, 19, 43, 0.06);
+        transition: transform 0.12s, opacity 0.12s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .option-btn:active {
+        transform: translateY(2px);
+      }
+      .opt-1 {
+        background: #ffd7a8;
+        color: #0b132b;
+      }
+      .opt-2 {
+        background: #a7d8ff;
+        color: #0b132b;
+      }
+      .opt-3 {
+        background: #c8f1c6;
+        color: #0b132b;
+      }
+      .opt-4 {
+        background: #ffc2d7;
+        color: #0b132b;
+      }
+      .selected-temp {
+        outline: 4px solid rgba(0, 0, 0, 0.08);
+        transform: scale(1.02);
+      }
+      #feedbackBar {
+        min-height: 40px;
+        margin-top: 16px;
+        font-weight: 800;
+        font-size: 18px;
+      }
+      .gesture-controls {
+        margin-top: 22px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        align-items: center;
+      }
+      #gestureToggle {
+        background: linear-gradient(90deg, #ff9f43, #ff7a59);
+        color: white;
+        padding: 12px 18px;
+        font-size: 18px;
+        border-radius: 12px;
+        border: 0;
+        cursor: pointer;
+      }
+      #cameraWrap {
+        margin-top: 10px;
+        display: none;
+      }
+      #webcam {
+        border-radius: 12px;
+        width: 360px;
+        height: 270px;
+        border: 6px solid rgba(255, 255, 255, 0.9);
+        box-shadow: 0 12px 30px rgba(11, 19, 43, 0.08);
+      }
+      #hint {
+        color: #6b7280;
+        font-weight: 700;
+        margin-top: 8px;
+      }
+      @media (max-width: 640px) {
+        #webcam {
+          width: 260px;
+          height: 200px;
+        }
+        .quiz-title {
+          font-size: 28px;
+        }
+        #question {
+          font-size: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="quiz-card" role="main" aria-labelledby="quizTitle">
+      <div id="quizTitle" class="quiz-title">🧮 Math Quiz</div>
+
+      <div id="question" aria-live="polite">Loading question…</div>
+
+      <div class="options" id="optionsContainer" role="list">
+        <!-- Buttons inserted by JS -->
+      </div>
+
+      <div id="feedbackBar" aria-live="assertive"></div>
+
+      <div class="gesture-controls">
+        <button id="gestureToggle" aria-pressed="false">
+          ✋ Enable Gesture Mode
+        </button>
+
+        <div id="cameraWrap">
+          <!-- tmImage.Webcam.canvas will be appended here -->
+          <div id="webcamHolder"></div>
+        </div>
+
+        <div id="hint">
+          ✋ Hold up 1, 2, 3 or 4 fingers — model will pick the corresponding
+          option
+        </div>
+      </div>
+    </div>
+
+    <!-- TF.js and Teachable Machine image library (needed for tmImage) -->
+    <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.12.0/dist/tf.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/image@0.8.4/dist/teachablemachine-image.min.js"></script>
+
+    <!-- confetti for rewards -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+
+    <!-- math logic + gesture -->
+    <script src="{{ url_for('static', filename='js/math-game.js') }}"></script>
+  </body>
+</html>

@@ -1,0 +1,28 @@
+{% extends "base.html" %} {% block content %}
+<section class="home-grid" aria-label="Game selection">
+  <a class="game-card" href="{{ url_for('math_game') }}">
+    <div class="emoji">➕</div>
+    <div class="title">Math Quiz</div>
+  </a>
+
+  <a class="game-card" href="{{ url_for('az_sign') }}">
+    <div class="emoji">👐</div>
+    <div class="title">A → Z (Sign)</div>
+  </a>
+
+  <a class="game-card" href="{{ url_for('color_quiz') }}">
+    <div class="emoji">🎨</div>
+    <div class="title">Color Recognition</div>
+  </a>
+
+  <a class="game-card" href="{{ url_for('puzzle_game') }}">
+    <div class="emoji">🧩</div>
+    <div class="title">Puzzle Drag & Drop</div>
+  </a>
+
+  <a class="game-card" href="{{ url_for('grammar_game') }}">
+    <div class="emoji">✍️</div>
+    <div class="title">Grammar Quiz</div>
+  </a>
+</section>
+{% endblock %}

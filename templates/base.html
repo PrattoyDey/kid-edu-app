@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Play & Learn</title>
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Baloo+2:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Styles -->
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
+
+    <!-- Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+  </head>
+  <body>
+    <header class="topbar" role="banner">
+      <div class="topbar-inner container">
+        <div class="logo">
+          <span class="emoji">🎈</span>
+          <span>Play &amp; Learn</span>
+        </div>
+
+        <nav class="kids-nav" role="navigation" aria-label="Main navigation">
+          <a href="{{ url_for('index') }}" class="nav-link">🏠 Home</a>
+          <a href="{{ url_for('math_game') }}" class="nav-link">➕ Math</a>
+          <a href="{{ url_for('az_sign') }}" class="nav-link">👐 A→Z</a>
+          <a href="{{ url_for('color_game') }}" class="nav-link">🎨 Colors</a>
+          <a href="{{ url_for('puzzle_game') }}" class="nav-link">🧩 Puzzle</a>
+          <a href="{{ url_for('grammar_game') }}" class="nav-link"
+            >✍️ Grammar</a
+          >
+        </nav>
+      </div>
+    </header>
+
+    <main id="main-content" class="container" role="main">
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="footer">Big smiles for each try! 😊</footer>
+
+    <!-- App helpers (confetti + speech + score) -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+  </body>
+</html>

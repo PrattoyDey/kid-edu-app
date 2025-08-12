@@ -1,0 +1,102 @@
+{% extends "base.html" %} {% block content %}
+<section class="game-area" aria-labelledby="az-title">
+  <h2 id="az-title">👐 A → Z (Sign Recognition)</h2>
+
+  <div class="question-card">
+    <p class="info">
+      Pick a letter or show the sign to the camera. Big letters are easier to
+      see!
+    </p>
+
+    <div id="letter-display" class="letter-display">A</div>
+
+    <div class="alphabet-grid" id="alphabet-grid" aria-label="Alphabet letters">
+      <!-- letters inserted by JS -->
+    </div>
+
+    <div class="controls" style="margin-top: 14px">
+      <label class="switch">
+        <input id="gesture-toggle" type="checkbox" />
+        <span class="switch-label">Use Camera for Signs</span>
+      </label>
+      <label class="switch">
+        <input id="teach-toggle" type="checkbox" />
+        <span class="switch-label">Teach Mode</span>
+      </label>
+    </div>
+
+    <div
+      id="webcam-container"
+      class="webcam-wrap"
+      aria-hidden="true"
+      style="display: none"
+    >
+      <video id="webcam" autoplay playsinline></video>
+      <canvas
+        id="output_canvas"
+        width="640"
+        height="480"
+        class="webcam-canvas"
+      ></canvas>
+      <p class="hint">Hold the sign clearly in front of the camera</p>
+    </div>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+    <div id="model-warning" class="model-warning"></div>
+
+    <div class="small-note">
+      To enable camera recognition: export a TF.js model (Teachable Machine) and
+      place it in <code>static/models/az/</code>.
+    </div>
+  </div>
+</section>
+
+<!-- TFJS (for model) -->
+<script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+<script>
+        let model;
+        async function loadModel() {
+            model = await tf.loadLayersModel('/static/models/az/model.json');
+            console.log("A→Z model loaded!");
+        }
+        loadModel();
+  <script>
+      async function predictFrame(imageElement) {
+          if (!model) return;
+          let tensor = tf.browser.fromPixels(imageElement)
+              .resizeNearestNeighbor([224, 224])
+              .toFloat()
+              .expandDims();
+
+          let prediction = await model.predict(tensor).data();
+          let maxIndex = prediction.indexOf(Math.max(...prediction));
+          let classes = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+          console.log("Detected letter:", classes[maxIndex]);
+      }
+</script>
+
+<!-- MediaPipe -->
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"></script>
+
+<script src="{{ url_for('static', filename='js/mediapipe-handler.js') }}"></script>
+<script src="{{ url_for('static', filename='js/az-model.js') }}"></script>
+
+<script>
+  /* Enhance feedback to speak and celebrate */
+  (function () {
+    const feedback = document.getElementById("feedback");
+    const obs = new MutationObserver(() => {
+      if (!feedback) return;
+      if (feedback.classList.contains("good")) {
+        window.app.celebrate();
+        window.app.speakText("Well done!");
+      } else if (feedback.classList.contains("bad")) {
+        window.app.speakText("Keep trying!");
+      }
+    });
+    obs.observe(feedback, { attributes: true, attributeFilter: ["class"] });
+  })();
+</script>
+{% endblock %}

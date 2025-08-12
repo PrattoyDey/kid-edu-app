@@ -1,0 +1,37 @@
+{% extends "base.html" %} {% block content %}
+<section class="game-area" aria-labelledby="grammar-title">
+  <h2 id="grammar-title">✍️ Grammar Quiz</h2>
+
+  <div class="question-card">
+    <div id="q-text" class="question-text">
+      Choose the correct word: "She ___ to school every day."
+    </div>
+    <div id="choices" class="choices">
+      <button class="choice">go</button>
+      <button class="choice">goes</button>
+      <button class="choice">gone</button>
+    </div>
+
+    <div id="feedback" class="feedback" role="status" aria-live="polite"></div>
+  </div>
+</section>
+
+<script>
+  document.querySelectorAll(".choice").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const val = btn.textContent.trim();
+      const feedback = document.getElementById("feedback");
+      if (val === "goes") {
+        feedback.textContent = "✅ Well done!";
+        feedback.className = "feedback good reward";
+        window.app.celebrate();
+        window.app.speakText("Correct!");
+      } else {
+        feedback.textContent = '❌ Nice try — the correct answer is "goes"';
+        feedback.className = "feedback bad";
+        window.app.speakText("Try again!");
+      }
+    });
+  });
+</script>
+{% endblock %}

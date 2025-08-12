@@ -1,0 +1,99 @@
+{% extends "base.html" %} {% block content %}
+<section class="game-area" aria-labelledby="puzzle-title">
+  <h2 id="puzzle-title">🧩 Drag & Drop Puzzle</h2>
+
+  <div class="puzzle-area">
+    <div id="puzzle-board" class="puzzle-board"></div>
+
+    <div
+      id="puzzle-controls"
+      class="puzzle-controls"
+      style="
+        display: flex;
+        gap: 12px;
+        justify-content: center;
+        align-items: center;
+        margin-top: 12px;
+      "
+    >
+      <button id="shuffle-btn" class="btn">🔀 Shuffle</button>
+      <div
+        id="puzzle-feedback"
+        class="feedback"
+        role="status"
+        aria-live="polite"
+      ></div>
+    </div>
+  </div>
+</section>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+<script>
+  /* Simple client-only drag-drop puzzle logic (no gestures) */
+  (function () {
+    const board = document.getElementById("puzzle-board");
+    const feedback = document.getElementById("puzzle-feedback");
+
+    function makeBoard() {
+      board.innerHTML = "";
+      const size = 3;
+      const total = size * size;
+      for (let i = 0; i < total; i++) {
+        const piece = document.createElement("div");
+        piece.className = "puzzle-piece";
+        piece.draggable = true;
+        piece.textContent = i + 1;
+        piece.dataset.index = i;
+        piece.addEventListener("dragstart", (e) =>
+          e.dataTransfer.setData("text/plain", e.target.dataset.index)
+        );
+        piece.addEventListener("drop", (e) => {
+          e.preventDefault();
+          const from = e.dataTransfer.getData("text/plain");
+          const to = e.target.dataset.index;
+          swapPieces(Number(from), Number(to));
+        });
+        piece.addEventListener("dragover", (e) => e.preventDefault());
+        board.appendChild(piece);
+      }
+    }
+
+    function swapPieces(a, b) {
+      const pieces = Array.from(board.children);
+      const pa = pieces[a],
+        pb = pieces[b];
+      const ta = pa.textContent,
+        tb = pb.textContent;
+      pa.textContent = tb;
+      pb.textContent = ta;
+      checkSolved();
+    }
+
+    function shuffle() {
+      const pieces = Array.from(board.children);
+      const texts = pieces.map((p) => p.textContent);
+      for (let i = texts.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [texts[i], texts[j]] = [texts[j], texts[i]];
+      }
+      pieces.forEach((p, i) => (p.textContent = texts[i]));
+      feedback.textContent = "Shuffled! Try to put them in order 😊";
+      feedback.className = "feedback";
+    }
+
+    function checkSolved() {
+      const pieces = Array.from(board.children);
+      const ok = pieces.every((p, i) => Number(p.textContent) === i + 1);
+      if (ok) {
+        feedback.textContent = "Amazing! Puzzle solved! 🎉";
+        feedback.className = "feedback good reward";
+        window.app.celebrate();
+        window.app.speakText("You did it! Puzzle complete!");
+      }
+    }
+
+    document.getElementById("shuffle-btn").addEventListener("click", shuffle);
+    makeBoard();
+  })();
+</script>
+{% endblock %}
